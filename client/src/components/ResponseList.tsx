@@ -7,10 +7,11 @@ export function ResponsesList() {
 	const { data: form } = useGetFormQuery(id!)
 
 	if (isLoading) return <div>Loading...</div>
+	if (!responses?.length) return <div>No responses yet</div>
 
 	return (
 		<>
-			{responses?.map((res, index) => (
+			{responses.map((res, index) => (
 				<div key={index} className="border p-4 mb-4 rounded">
 					{res.answers.map((answ, answId) => {
 						const question = form?.questions[answ.questionIndex]

@@ -1,7 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useFormBuilder } from '../hooks/useFormBuilder'
 import { useCreateFormMutation } from '../services/api/baseApi'
-import type { FormBuilderValues } from '../shared/types/form.types'
+import type {
+	FormBuilderValues,
+	QuestionType
+} from '../shared/types/form.types'
 import { formatApiRequest } from '../utils/formatApiRequest'
 import { AddQuestionBtn } from './AddQuestionBtn'
 import { QuestionItem } from './QuestionItem'
@@ -12,9 +15,26 @@ export function FormBuilder() {
 	const { form, questionsArray, addQuestion, removeQuestion } =
 		useFormBuilder()
 
+	const { setError, clearErrors } = form
+
 	const [createForm, { isLoading }] = useCreateFormMutation()
 
+	const handleAdd = (type: QuestionType) => {
+		addQuestion(type)
+		form.clearErrors('questions')
+	}
+
 	const onSubmit = async (data: FormBuilderValues) => {
+		if (!data.questions || data.questions.length === 0) {
+			setError('questions', {
+				type: 'manual',
+				message: 'Add at least one question'
+			})
+			return
+		}
+
+		clearErrors('questions')
+
 		const input = formatApiRequest(data)
 		await createForm(input)
 		navigate('/')
@@ -56,26 +76,31 @@ export function FormBuilder() {
 					/>
 				))}
 			</div>
+			{form.formState.errors.questions && (
+				<span className="text-red-500 text-sm">
+					{form.formState.errors.questions.message}
+				</span>
+			)}
 			<div className="flex gap-2">
 				<AddQuestionBtn
 					type="TEXT"
 					title="Add Text"
-					addQuestion={addQuestion}
+					addQuestion={handleAdd}
 				/>
 				<AddQuestionBtn
 					type="MULTIPLE_CHOICE"
 					title="Add Choice"
-					addQuestion={addQuestion}
+					addQuestion={handleAdd}
 				/>
 				<AddQuestionBtn
 					type="CHECKBOX"
 					title="Add Checkbox"
-					addQuestion={addQuestion}
+					addQuestion={handleAdd}
 				/>
 				<AddQuestionBtn
 					type="DATE"
 					title="Add Date"
-					addQuestion={addQuestion}
+					addQuestion={handleAdd}
 				/>
 			</div>
 			<button
